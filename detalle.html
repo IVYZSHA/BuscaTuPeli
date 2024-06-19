@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle Película</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <h2 id="titulo"></h2>
+
+        <div id="detallePelicula">
+            <h4>Sinopsis</h4>
+            <p id="descr"
+                style="text-align: justify;margin-left: 80px; margin-right: 80px; margin-top: 15px; margin-bottom: 40px;">
+            </p>
+            <img id="img" style="border-radius: 8px; max-width: 100%;  height: auto; " width="500">
+            <h4>Mirala en: </h4>
+            <ul id="lista-provedores"></ul>
+        </div>
+
+        </ul>
+        <div class="volver-buttons">
+            <a href="index.html">Regresar</a>
+        </div>
+    </div>
+
+    <script>
+
+        var idPelicula = getParameterByName('id');
+
+        const options = {
+            method: 'GET',
+            headers: {
+                accept: 'application/json',
+                Authorization: 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwMTFkMjRkMzljM2M3MTY4MTBlNmI2YWFlYTVjNDcwNyIsInN1YiI6IjY2NmY2ODM2NDI2Zjg2YWE0OWE2MzczMCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.KO4l7xcSr_l4eglzDWhsjnBL_g3s7P1NOnovF0JffBM'
+            }
+        };
+
+        fetch(`https://api.themoviedb.org/3/movie/${idPelicula}?language=es-ES`, options)
+            .then(response => response.json())
+            .then(response => {
+                document.getElementById('titulo').innerText = response.title.toUpperCase();
+                document.getElementById('descr').innerText = response.overview;
+                const image = document.getElementById('img');
+                image.src = `https://image.tmdb.org/t/p/original/${response.poster_path}`;
+                image.alt = response.original_title;
+                const nombreProducto = document.createElement('h5');
+                nombreProducto.textContent = response.original_title;
+
+            })
+            .catch(err => console.error(err));
+
+        dondeVer(idPelicula);
+
+        function getParameterByName(name) {
+            name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+            var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+                results = regex.exec(location.search);
+            return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+        }
+
+        function dondeVer(idPelicula) {
+            const options = {
+                method: 'GET',
+                headers: {
+                    accept: 'application/json',
+                    Authorization: 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwMTFkMjRkMzljM2M3MTY4MTBlNmI2YWFlYTVjNDcwNyIsInN1YiI6IjY2NmY2ODM2NDI2Zjg2YWE0OWE2MzczMCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.KO4l7xcSr_l4eglzDWhsjnBL_g3s7P1NOnovF0JffBM'
+                }
+            };
+
+            fetch(`https://api.themoviedb.org/3/movie/${idPelicula}/watch/providers`, options)
+                .then(response => response.json())
+                .then(response => {
+                    response.results.AR.flatrate.forEach(provedor => {
+                        const listaProvedores = document.getElementById('lista-provedores')
+                        const li = document.createElement('li');
+                        const nombreP = document.createElement('h4');
+                        nombreP.textContent = provedor.provider_name;
+                        li.appendChild(nombreP);
+                        listaProvedores.appendChild(li);
+                    });
+        
+                })
+            .catch(err => console.error(err));
+        }
+
+    </script>
+</body>
+
+</html>
