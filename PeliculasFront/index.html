@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Películas</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Encuentra tu Película</h1>
+
+        <!-- Formulario de búsqueda -->
+        <form id="search-form">
+            <input type="text" required id="search-input" placeholder="Ingrese nombre de película">
+            <button id="search-btn" type="submit">Buscar</button>
+        </form>
+        <div id="botonPrincipal" class="volver-buttons" style=" text-align: left; margin-left: 20px;">
+            <a href="peliculaABM.html">ABM</a>
+        </div>
+        <h2>Populares</h2>
+        <ul id="lista-peliculas">
+
+        </ul>
+    </div>
+
+    <script>
+        const form = document.getElementById('search-form');
+        const input = document.getElementById('search-input');
+        const images = document.querySelectorAll('.image-item');
+        const apiBaseURL = 'http://localhost:5000/api/peliculas';
+
+
+        fetch(`${apiBaseURL}/filtro`)
+            .then(response => response.json())
+            .then(response => {
+                response = response.splice(1, 10);
+                response.forEach(response => {
+                    const listaPeliculas = document.getElementById('lista-peliculas')
+                    const imagen = document.createElement('img');
+                    const li = document.createElement('li');
+
+                    const imageType = getImageType(response.poster);
+
+                    imagen.src = `data:${imageType};base64,${response.poster}`;
+                    imagen.alt = response.titulo;
+                    li.onclick = function () { location.href = `detalle.html?id=${response.id}` }
+                    const nombreP = document.createElement('h5');
+                    nombreP.textContent = response.titulo;
+
+
+                    li.appendChild(imagen);
+                    li.appendChild(nombreP);
+                    listaPeliculas.appendChild(li);
+                });
+            })
+            .catch(err => console.error(err));
+
+
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+            const searchTerm = input.value.toLowerCase();
+
+            window.location.href = `listado.html?nombre=${searchTerm}`;
+
+        });
+
+        function getImageType(base64) {
+            if (base64 === null) { return ''; }
+            if (base64.startsWith("/9j/")) {
+                return "image/jpeg";
+            } else if (base64.startsWith("iVBORw0KGgo")) {
+                return "image/png";
+            } else if (base64.startsWith("R0lG")) {
+                return "image/gif";
+            } else {
+                return "unknown"; // Tipo desconocido
+            }
+        }
+    </script>
+</body>
+
+</html>

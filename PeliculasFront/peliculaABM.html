@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Películas API</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+
+        .container {
+            min-width: 1080px;
+            margin: 0 auto;
+            background: white;
+            padding: 50px;
+            border-radius: 5px;
+        }
+
+        h1,
+        h2 {
+            text-align: center;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        input,
+        textarea {
+            padding: 10px;
+            font-size: 16px;
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 10px 20px;
+    background-color: #5DADE2;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #1F618D;
+        }
+
+        #moviesList,
+        #searchResult {
+            margin-top: 20px;
+        }
+
+        .movie {
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Películas</h1>
+        <div id="botonPrincipal" class="volver-buttons" style=" text-align: left; margin-left: 20px;">
+            <a href="index.html">Pagina principal</a>
+        </div>
+
+        <!-- Formulario para agregar una película -->
+        <form id="addMovieForm">
+            <h2>Agregar película</h2>
+            <input type="file" id="poster" accept="image/*" required>
+            <input type="text" id="titulo" placeholder="Título" required>
+            <textarea id="sinopsis" placeholder="Sinopsis" required></textarea>
+            <input type="checkbox" id="enCines"> En cines
+            <input type="date" id="fechaEstreno" required>
+            <button type="submit">Agregar</button>
+        </form>
+
+        <!-- Formulario para actualizar una película -->
+        <div id="updateMovieForm" style="display:none;">
+            <h2>Actualizar película</h2>
+            <input type="hidden" id="updateMovieId">
+            <input type="file" id="updatePoster" accept="image/*">
+            <input type="text" id="updateTitulo" placeholder="Título" required>
+            <textarea id="updateSinopsis" placeholder="Sinopsis" required></textarea>
+            <input type="checkbox" id="updateEnCines"> En cines
+            <input type="date" id="updateFechaEstreno" required>
+            <button id="updateButton">Actualizar</button>
+            <button id="cancelUpdateButton">Cancelar</button>
+        </div>
+
+        <!-- Listar las películas -->
+        <h2>Lista de películas</h2>
+        <!-- <button id="loadMovies">Cargar películas</button> -->
+        <div id="moviesList" style="text-align: start;"></div>
+
+        <div id="paginationControls">
+            <button id="prevPage" disabled>Anterior</button>
+            <span id="currentPage">1</span>
+            <button id="nextPage">Siguiente</button>
+        </div>
+
+        <!-- Buscar película -->
+        <h2>Buscar película por título</h2>
+        <input type="text" id="searchTitle" placeholder="Buscar por título">
+        <button id="searchMovie">Buscar</button>
+        <div id="searchResult"></div>
+    </div>
+
+    <script>
+        const apiBaseURL = 'http://localhost:5000/api/peliculas';
+        let currentPage = 1;
+        const recordsPerPage = 4;
+
+        // Función para agregar una película
+        document.getElementById('addMovieForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData();
+            formData.append('Poster', document.getElementById('poster').files[0]);
+            formData.append('Titulo', document.getElementById('titulo').value);
+            formData.append('Sinopsis', document.getElementById('sinopsis').value);
+            formData.append('EnCines', document.getElementById('enCines').checked);
+            formData.append('FechaEstreno', new Date(document.getElementById('fechaEstreno').value).toISOString());
+
+            try {
+                const response = await fetch(apiBaseURL, {
+                    method: 'POST',
+                    body: formData,
+                });
+                const result = await response.json();
+                alert('Película agregada: ' + result.titulo);
+                loadMovies(); // Cargar nuevamente la lista de películas
+            } catch (error) {
+                console.error('Error al agregar película:', error);
+            }
+        });
+
+        // Función para listar las películas
+        async function loadMovies() {
+            try {
+                const response = await fetch(`${apiBaseURL}/filtro?Pagina=${currentPage}&CantidadRegistrosPorPagina=${recordsPerPage}`);
+                const movies = await response.json();
+                const moviesList = document.getElementById('moviesList');
+                moviesList.innerHTML = '';
+                movies.forEach((movie) => {
+                    const movieItem = document.createElement('div');
+                    movieItem.classList.add('movie');
+                    movieItem.innerHTML = `
+                <h3>${movie.titulo}</h3>
+                <p>Estreno: ${new Date(movie.fechaEstreno).toLocaleDateString()}</p>
+                <p>En cines: ${movie.enCines ? 'Sí' : 'No'}</p>
+                <button onclick="openUpdateForm(${movie.id}, '${movie.titulo}', '${movie.sinopsis}', ${movie.enCines}, '${movie.fechaEstreno}')">Actualizar</button>
+                <button onclick="deleteMovie(${movie.id})">Eliminar</button>
+            `;
+                    moviesList.appendChild(movieItem);
+                });
+            } catch (error) {
+                console.error('Error al cargar películas:', error);
+            }
+            // Actualizar controles de paginación
+            document.getElementById('currentPage').textContent = currentPage;
+            document.getElementById('prevPage').disabled = currentPage === 1;
+            //document.getElementById('nextPage').disabled = currentPage >= response.TotalPaginas;
+
+            // Agregar eventos a los botones de actualización y eliminación
+            document.querySelectorAll('.update-button').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const movieId = e.target.getAttribute('data-id');
+                    showUpdateForm(movieId); // Mostrar el formulario de actualización
+                });
+            });
+
+            document.querySelectorAll('.delete-button').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const movieId = e.target.getAttribute('data-id');
+                    deleteMovie(movieId); // Lógica para eliminar la película
+                });
+            });
+        }
+
+        document.getElementById('prevPage').addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                loadMovies();
+            }
+        });
+
+        document.getElementById('nextPage').addEventListener('click', () => {
+            currentPage++;
+            loadMovies();
+        });
+
+
+
+        // Función para buscar una película
+        document.getElementById('searchMovie').addEventListener('click', async () => {
+            const title = document.getElementById('searchTitle').value;
+            if (!title) return alert('Por favor, introduce un título para buscar.');
+
+            try {
+                const response = await fetch(`${apiBaseURL}/filtro?Pagina=1&CantidadRegistrosPorPagina=20&Titulo=${encodeURIComponent(title)}`);
+                const result = await response.json();
+                const searchResult = document.getElementById('searchResult');
+                searchResult.innerHTML = result.map(movie => `<div class="movie"><h3>${movie.titulo}</h3><p>${movie.sinopsis}</p></div>`).join('');
+            } catch (error) {
+                console.error('Error al buscar película:', error);
+            }
+        });
+
+        // Función para eliminar una película
+        async function deleteMovie(id) {
+            if (confirm('¿Estás seguro de que deseas eliminar esta película?')) {
+                try {
+                    await fetch(`${apiBaseURL}/${id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'accept': '*/*'
+                        }
+                    });
+                    alert('Película eliminada');
+                    loadMovies(); // Recargar la lista de películas
+                } catch (error) {
+                    console.error('Error al eliminar película:', error);
+                }
+            }
+        }
+
+        // Función para abrir el formulario de actualización
+        function openUpdateForm(id, titulo, sinopsis, enCines, fechaEstreno) {
+            document.getElementById('updateMovieId').value = id;
+            document.getElementById('updateTitulo').value = titulo;
+            document.getElementById('updateSinopsis').value = sinopsis;
+            document.getElementById('updateEnCines').checked = enCines;
+            document.getElementById('updateFechaEstreno').value = new Date(fechaEstreno).toISOString().slice(0, 10);
+
+            document.getElementById('updateMovieForm').style.display = 'block';
+            document.getElementById('updateMovieForm').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Función para actualizar una película
+        document.getElementById('updateButton').addEventListener('click', async (e) => {
+            e.preventDefault();
+
+            const id = document.getElementById('updateMovieId').value;
+            const formData = new FormData();
+
+            // Solo agregar el archivo si está presente
+            const updatePosterFile = document.getElementById('updatePoster').files[0];
+            if (updatePosterFile) {
+                formData.append('Poster', updatePosterFile);
+            }
+
+            formData.append('Titulo', document.getElementById('updateTitulo').value);
+            formData.append('Sinopsis', document.getElementById('updateSinopsis').value);
+            formData.append('EnCines', document.getElementById('updateEnCines').checked);
+            formData.append('FechaEstreno', new Date(document.getElementById('updateFechaEstreno').value).toISOString());
+
+            try {
+                await fetch(`${apiBaseURL}/${id}`, {
+                    method: 'PUT',
+                    body: formData, // No es necesario establecer Content-Type
+                    // Elimina el header Content-Type
+                });
+                alert('Película actualizada');
+                loadMovies(); // Recargar la lista de películas
+                document.getElementById('updateMovieForm').style.display = 'none'; // Ocultar formulario de actualización
+            } catch (error) {
+                console.error('Error al actualizar película:', error);
+            }
+        });
+
+
+        // Cargar películas al inicio
+        loadMovies();
+
+
+    </script>
+</body>
+
+</html>

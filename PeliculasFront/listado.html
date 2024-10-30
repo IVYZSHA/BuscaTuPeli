@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listado Películas</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1 id="titulo"></h1>
+
+        <div id="botonPrincipal" class="volver-buttons" style=" text-align: left; margin-left: 20px;">
+            <a href="index.html">Pagina principal</a>
+        </div>
+
+        <ul id="lista-peliculas"></ul>
+
+        <div class="volver-buttons">
+            <a href="index.html">Regresar</a>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('search-form');
+        const input = document.getElementById('search-input');
+        const images = document.querySelectorAll('.image-item');
+        const apiBaseURL = 'http://localhost:5000/api/peliculas';
+        var nombrePelicula = getParameterByName('nombre');
+
+        fetch(`${apiBaseURL}/filtro?Pagina=1&CantidadRegistrosPorPagina=20&Titulo=${encodeURIComponent(nombrePelicula)}`)
+            .then(response => response.json())
+            .then(response => {
+                response = response.splice(0, 20);
+                if (response.total_results === 0) {
+                    document.getElementById('titulo').innerText = "Película no encontrada";
+                    document.getElementById('botonPrincipal').remove();
+                }
+
+                response.forEach(response => {
+                    const listaPeliculas = document.getElementById('lista-peliculas')
+                    const imagen = document.createElement('img');
+                    const li = document.createElement('li');
+
+                    const imageType = getImageType(response.poster);
+
+
+
+                    li.onclick = function () { location.href = `detalle.html?id=${response.id}` }
+                    imagen.src = `data:${imageType};base64,${response.poster}`;
+                    imagen.alt = response.titulo;
+                    document.getElementById('titulo').innerText = nombrePelicula.toUpperCase();
+                    const nombreP = document.createElement('h5');
+                    nombreP.textContent = response.titulo;
+
+
+                    li.appendChild(imagen);
+                    li.appendChild(nombreP);
+                    listaPeliculas.appendChild(li);
+
+                });
+            })
+            .catch(err => console.error(err));
+
+
+
+        function getParameterByName(name) {
+            name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+            var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+                results = regex.exec(location.search);
+            return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+        }
+
+        
+        function getImageType(base64) {
+            if (base64 === null) { return ''; }
+            if (base64.startsWith("/9j/")) {
+                return "image/jpeg";
+            } else if (base64.startsWith("iVBORw0KGgo")) {
+                return "image/png";
+            } else if (base64.startsWith("R0lG")) {
+                return "image/gif";
+            } else {
+                return "unknown"; // Tipo desconocido
+            }
+        }
+
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,134 @@
+body {
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(to bottom right, #8727e0, #cc99ff);
+}
+
+.container {
+    max-width: 1080px;
+    text-align: center;
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+#search-form {
+    margin-bottom: 20px;
+}
+
+#textoImagen{
+    display: inline-block;
+    vertical-align: top;
+  }
+
+#lista-peliculas {
+    
+    list-style-type: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+}
+
+#lista-provedores {
+    
+    list-style-type: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+}
+
+#lista-provedores li {
+    width: 15%; 
+
+    padding-bottom: 0px;
+    text-align: center;
+}
+
+#lista-peliculas li {
+    cursor:pointer; 
+    width: 15%; 
+    margin: 10px;
+    padding: 10px;
+    padding-bottom: 0px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+#lista-peliculas li img {
+    max-width: 100%;
+    height: auto;
+    margin-bottom: 10px;
+}
+
+#lista-peliculas li h5 {
+    margin-top: 0;
+    font-size: 0.9em;
+    color: #333;
+}
+
+#lista-provedores li h4 {
+    margin-top: 0;
+    font-size: 1.2em;
+    color: #5DADE2;
+}
+
+#lista-peliculas li p {
+color: #666;
+margin-bottom: 5px;
+}
+
+.volver-buttons {
+    margin-top: 20px;
+}
+
+.volver-buttons a {
+    display: inline-block;
+    padding: 8px 16px;
+    margin: 0 5px;
+    background-color: #e7e7e7;
+    color: black;
+    ;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+.volver-buttons a:hover {
+    background-color: #5DADE2;
+}
+
+#search-btn {
+    padding: 10px 20px;
+    background-color: #5DADE2;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+#search-btn:hover {
+    background-color: #1F618D;
+}
+
+#search-input {
+    padding: 15px;
+    font-size: 18px;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    /* Hacer los bordes más redondeados */
+    width: 70%;
+    margin-right: 10px;
+    box-sizing: border-box;
+    /* Incluir el padding en el ancho total */
+}
