@@ -36,7 +36,7 @@
         fetch(`${apiBaseURL}/filtro`)
             .then(response => response.json())
             .then(response => {
-                response = response.splice(1, 10);
+                //response = response.splice(1, 10);
                 response.forEach(response => {
                     const listaPeliculas = document.getElementById('lista-peliculas')
                     const imagen = document.createElement('img');

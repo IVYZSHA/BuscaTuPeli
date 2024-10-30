@@ -108,7 +108,7 @@ namespace PeliculasAPI.Controllers
             await HttpContext.InsertarParametrosPaginacion(peliculasQueryable,
                 filtroPeliculasDTO.CantidadRegistrosPorPagina);
 
-            var peliculas = await peliculasQueryable.Paginar(filtroPeliculasDTO.Paginacion).ToListAsync();
+            var peliculas =  peliculasQueryable.Paginar(filtroPeliculasDTO.Paginacion).ToList();
 
             return mapper.Map<List<PeliculaDTO>>(peliculas);
         }
